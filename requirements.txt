@@ -5,9 +5,11 @@
 #    pip-compile --output-file requirements.txt requirements.in
 #
 
+Cython==0.24              # via h5py
+h5py==2.5.0
 keras==1.0
 numpy==1.11.0
 pyyaml==3.11              # via keras
 scipy==0.17.0             # via theano
-six==1.10.0               # via keras, theano
+six==1.10.0               # via h5py, keras, theano
 Theano==0.8.1             # via keras
