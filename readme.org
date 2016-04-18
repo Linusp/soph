@@ -1,3 +1,10 @@
-* Memorize
+* Soph
 
-  一个 RNN 实践/试验项目。
+  一个人工智能实践项目。本项目旨在展示人工智能技术在实际场景中的应用，以及当前的一些优秀工具的合理利用。
+
+** 环境配置
+
+   本项目主要使用 Python 进行编码，使用下列命令来初始化环境:
+   #+BEGIN_SRC sh
+   make venv && make deps && source venv/bin/active
+   #+END_SRC

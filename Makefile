@@ -12,7 +12,7 @@ deps: venv
 	@$(PIP_INSTALL) -i $(PIP_MIRROR) -r requirements.txt
 
 venv:
-	@virtualenv $(VENV) --prompt '<venv:memorize>'
+	@virtualenv $(VENV) --prompt '<venv:soph>'
 	@$(PIP_INSTALL) -i $(PIP_MIRROR) -U pip setuptools pip-tools
 
 clean_pyc:
