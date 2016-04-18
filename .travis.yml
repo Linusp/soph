@@ -1,0 +1,9 @@
+language: python
+
+python:
+    - "2.7"
+
+install: "make venv && make deps"
+
+script:
+    - "venv/bin/python tests/pylint.sh"
