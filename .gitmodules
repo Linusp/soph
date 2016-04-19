@@ -1,3 +1,3 @@
 [submodule "materials"]
 	path = materials
-	url = git@github.com:Linusp/materials
+	url = https://github.com/Linusp/materials
