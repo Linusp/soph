@@ -1,5 +1,7 @@
 * Soph
 
+  [[https://secure.travis-ci.org/Linusp/soph.png?branch=master]]
+
   一个人工智能实践项目。本项目旨在展示人工智能技术在实际场景中的应用，以及当前的一些优秀工具的合理利用。
 
 ** 环境配置
