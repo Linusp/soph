@@ -3,7 +3,11 @@ language: python
 python:
     - "2.7"
 
+before_install:
+    - sudo apt-get update && sudo apt-get -y --no-install-recommends install libhdf5-dev python-pylint
+    - sudo apt-get
+
 install: "make venv && make deps"
 
 script:
-    - "venv/bin/python tests/pylint.sh"
+    - "bash tests/pylint.sh"
