@@ -13,7 +13,7 @@ deps: venv
 
 venv:
 	@virtualenv $(VENV) --prompt '<venv:soph>'
-	@$(PIP_INSTALL) -i $(PIP_MIRROR) -U pip setuptools pip-tools
+	@$(PIP_INSTALL) -i $(PIP_MIRROR) -U pip setuptools pip-tools pylint
 
 clean_pyc:
 	find . -not \( -path './venv' -prune \) -name '*.pyc' -exec rm -f {} \;

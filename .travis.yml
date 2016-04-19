@@ -4,8 +4,7 @@ python:
     - "2.7"
 
 before_install:
-    - sudo apt-get update && sudo apt-get -y --no-install-recommends install libhdf5-dev python-pylint
-    - sudo apt-get
+    - sudo apt-get update && sudo apt-get -y --no-install-recommends install libhdf5-serial-dev
 
 install: "make venv && make deps"
 
