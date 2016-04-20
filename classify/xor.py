@@ -21,7 +21,10 @@ def build_model_from_file():
     model_struct_file = os.path.join(PROJECT_ROOT, MODEL_PATH, MODEL_STRUCT_FILE)
     model_weights_file = os.path.join(PROJECT_ROOT, MODEL_PATH, MODEL_WEIGHTS_FILE)
 
+    sgd = SGD(lr=0.1)
+
     model = model_from_json(open(model_struct_file, 'r').read())
+    model.compile(loss="binary_crossentropy", optimizer=sgd)
     model.load_weights(model_weights_file)
 
     return model
