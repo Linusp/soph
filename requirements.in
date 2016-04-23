@@ -2,3 +2,4 @@ keras==1.0
 numpy==1.11.0
 h5py==2.5.0
 click==6.6
+-e git+https://github.com/Linusp/materials.git@6e2681ebf9292f#egg=materials
