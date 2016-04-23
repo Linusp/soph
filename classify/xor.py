@@ -73,7 +73,7 @@ def main(action):
         click.echo("saving to hard disk...")
         save_model_to_file(model)
         click.echo("finished!")
-    if action == 'test':
+    elif action == 'test':
         model = build_model_from_file()
         while True:
             user_input = raw_input("Enter two number, 0 or 1, anything else to quit: ")
