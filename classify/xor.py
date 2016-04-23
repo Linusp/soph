@@ -75,7 +75,6 @@ def main(action):
         click.echo("finished!")
     if action == 'test':
         model = build_model_from_file()
-        print model
         while True:
             user_input = raw_input("Enter two number, 0 or 1, anything else to quit: ")
             user_input = [e.strip() for e in user_input.split()]
