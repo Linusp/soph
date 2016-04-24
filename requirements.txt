@@ -4,12 +4,18 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
+--index-url https://pypi.mirrors.ustc.edu.cn/simple
+
 
 -e git+https://github.com/Linusp/materials.git@6e05ab7edfb5#egg=materials
 click==6.6
 Cython==0.24              # via h5py
+Flask==0.10.1
 h5py==2.5.0
+itsdangerous==0.24        # via flask
+Jinja2==2.8               # via flask
 keras==1.0
+MarkupSafe==0.23          # via jinja2
 numpy==1.11.0
 pandas==0.18.0
 python-dateutil==2.5.2    # via pandas
@@ -18,3 +24,4 @@ pyyaml==3.11              # via keras
 scipy==0.17.0             # via theano
 six==1.10.0               # via h5py, keras, python-dateutil, theano
 Theano==0.8.1             # via keras
+Werkzeug==0.11.8          # via flask
