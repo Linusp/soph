@@ -33,10 +33,8 @@ def build_model_from_file():
 def build_model():
     """建立一个 3 层(含输入层和输出层)神经网络"""
     model = Sequential()
-    model.add(Dense(input_dim=2, output_dim=5))
-    model.add(Activation("tanh"))
-    model.add(Dense(output_dim=1))
-    model.add(Activation("sigmoid"))
+    model.add(Dense(input_dim=2, output_dim=5, activation="tanh"))
+    model.add(Dense(output_dim=1, activation="sigmoid"))
 
     sgd = SGD(lr=0.1)
 
