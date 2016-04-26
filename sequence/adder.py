@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import os
+import click
 import numpy as np
 from keras.layers.core import Activation
 from keras.layers.recurrent import GRU, LSTM
@@ -90,21 +91,23 @@ def train_adder(model):
     return model
 
 
-if __name__ == '__main__':
-    train = False
-    test = not train
-    if train:
+@click.command()
+@click.argument('action')
+def main(action):
+    if action == 'build':
         model = build_model()
-        model = train_adder(model)
+        model = train_adder()
         save_model_to_file(model)
-
-    if test:
+    elif action == 'test':
         model = build_model_from_file()
         test_x, test_y = build_data(10)
 
         preds = model.predict(test_x)
         for i in range(len(test_x)):
-            # print test_x[i].argmax(axis=1), preds[i].argmax(axis=1), test_y[i].argmax(axis=1)
             seq_in = ''.join([INDICES_TO_CHAR[k] for k in test_x[i].argmax(axis=1)])
             seq_out = ''.join([INDICES_TO_CHAR[k] for k in preds[i].argmax(axis=1)])
             print seq_in, seq_out
+
+
+if __name__ == '__main__':
+    main()
