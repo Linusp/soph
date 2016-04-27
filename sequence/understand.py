@@ -6,9 +6,7 @@ from keras.layers.recurrent import GRU
 
 
 def understand_return_sequence():
-    """
-    用来帮助理解 recurrent layer 中的 return_sequences 参数
-    """
+    """用来帮助理解 recurrent layer 中的 return_sequences 参数"""
     model_1 = Sequential()
     model_1.add(GRU(input_dim=256, output_dim=256, return_sequences=True))
     model_1.compile(loss='mean_squared_error', optimizer='sgd')
@@ -36,9 +34,7 @@ def understand_return_sequence():
 
 
 def understand_variable_length_handle():
-    """
-    用来帮助理解如何用 recurrent layer 处理变长序列
-    """
+    """用来帮助理解如何用 recurrent layer 处理变长序列"""
     model = Sequential()
     model.add(GRU(input_dim=256, output_dim=256, return_sequences=True))
     model.compile(loss='mean_squared_error', optimizer='sgd')
@@ -58,6 +54,33 @@ def understand_variable_length_handle():
     print 'Input shape is: {}, output shae is {}'.format(inz_1.shape, rez_1.shape)
     print 'Input shape is: {}, output shae is {}'.format(inz_2.shape, rez_2.shape)
     print '====================== end ============================='
+
+
+def try_variable_length_train():
+    """变长序列训练实验
+
+    实验失败，这样得到的 train_x 和 train_y 的 dtype 是 object 类型，
+    取其 shape 得到的是 (100,) ，这将导致训练出错
+    """
+    model = Sequential()
+    model.add(GRU(input_dim=256, output_dim=256, return_sequences=True))
+    model.compile(loss='mean_squared_error', optimizer='sgd')
+
+    train_x = []
+    train_y = []
+    for i in range(100):
+        seq_length = np.random.randint(78, 87+1)
+        sequence = []
+        for _ in range(seq_length):
+            sequence.append([np.random.randn() for _ in range(256)])
+
+        train_x.append(np.array(sequence))
+        train_y.append(np.array(sequence))
+
+    train_x = np.array(train_x)
+    train_y = np.array(train_y)
+
+    model.fit(np.array(train_x), np.array(train_y))
 
 
 if __name__ == '__main__':
