@@ -83,6 +83,20 @@ def try_variable_length_train():
     model.fit(np.array(train_x), np.array(train_y))
 
 
+def try_variable_length_train_in_batch():
+    """变长序列训练实验(2)"""
+    model = Sequential()
+    model.add(GRU(input_dim=256, output_dim=256, return_sequences=True))
+    model.compile(loss='mean_squared_error', optimizer='sgd')
+
+    # 分作两个 batch, 不同 batch 中的 sequence 长度不一样
+    seq_lens = [78, 87]
+    for i in range(2):
+        train_x = np.random.randn(20, seq_lens[i], 256)
+        train_y = np.random.randn(20, seq_lens[i], 256)
+        model.train_on_batch(train_x, train_y)
+
+
 if __name__ == '__main__':
     understand_return_sequence()
     understand_variable_length_handle()
