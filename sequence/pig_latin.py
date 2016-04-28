@@ -54,6 +54,9 @@ def vectorize(word, seq_len, vec_size):
     for i, ch in enumerate(word):
         vec[i, CHAR_TO_INDICES[ch]] = 1
 
+    for i in range(len(word), seq_len):
+        vec[i, CHAR_TO_INDICES[END_SYMBOL]] = 1
+
     return vec
 
 
