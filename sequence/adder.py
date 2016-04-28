@@ -3,8 +3,9 @@
 import os
 import click
 import numpy as np
-from keras.layers.core import Activation
-from keras.layers.recurrent import GRU, LSTM
+from keras.layers.recurrent import GRU
+from keras.layers.wrappers import TimeDistributed
+from keras.layers.core import Dense, RepeatVector
 from keras.models import Sequential, model_from_json
 
 
@@ -14,100 +15,124 @@ MODEL_STRUCT_FILE = 'adder_struct.json'
 MODEL_WEIGHTS_FILE = 'adder_weights.h5'
 
 
-SEP = '|'
-BLANK = ' '
-CHARSET = set('0123456789+ ' + SEP)
+BEGIN_SYMBOL = '^'
+END_SYMBOL = '$'
+CHARSET = set('0123456789+ ' + BEGIN_SYMBOL + END_SYMBOL)
 CHAR_NUM = len(CHARSET)
-INPUT_SEQUENCE_LEN = 6
-OUTPUT_SEQUENCE_LEN = 6
+MAX_LEN = 12
+MAX_LEN = 12
 
 CHAR_TO_INDICES = {c: i for i, c in enumerate(CHARSET)}
 INDICES_TO_CHAR = {i: c for c, i in CHAR_TO_INDICES.iteritems()}
 
 
-def build_data(data_size):
+def vectorize(seq, seq_len, vec_size):
+    vec = np.zeros((seq_len, vec_size), dtype=int)
+    for i, ch in enumerate(seq):
+        vec[i, CHAR_TO_INDICES[ch]] = 1
+
+    for i in range(len(seq), seq_len):
+        vec[i, CHAR_TO_INDICES[END_SYMBOL]] = 1
+
+    return vec
+
+
+def build_data():
+    """生成所有三位数(包含)一下的加法"""
     plain_x = []
     plain_y = []
-    for _ in range(data_size):
-        a = np.random.randint(0, 10)
-        b = np.random.randint(0, 10)
-        x = '{0}+{1}{2}  '.format(a, b, SEP)
-        y = '{:5d}{}'.format(a+b, SEP)
+    for i in range(0, 100):
+        for j in range(0, 100):
+            x = BEGIN_SYMBOL + '{}+{}'.format(i, j) + END_SYMBOL
+            y = BEGIN_SYMBOL + '{}'.format(i+j) + END_SYMBOL
 
-        plain_x.append(x)
-        plain_y.append(y)
+            plain_x.append(x)
+            plain_y.append(y)
+
+    data_size = len(plain_x)
 
     # convert to one-hot
-    X = np.zeros((data_size, INPUT_SEQUENCE_LEN, CHAR_NUM), dtype=int)
-    Y = np.zeros((data_size, OUTPUT_SEQUENCE_LEN, CHAR_NUM), dtype=int)
+    X = np.zeros((data_size, MAX_LEN, CHAR_NUM), dtype=int)
+    Y = np.zeros((data_size, MAX_LEN, CHAR_NUM), dtype=int)
 
     for i, seq in enumerate(plain_x):
-        for j, char in enumerate(seq):
-            X[i, j, CHAR_TO_INDICES[char]] = 1
+        X[i] = vectorize(seq, MAX_LEN, CHAR_NUM)
 
     for i, seq in enumerate(plain_y):
-        for j, char in enumerate(seq):
-            Y[i, j, CHAR_TO_INDICES[char]] = 1
+        Y[i] = vectorize(seq, MAX_LEN, CHAR_NUM)
 
     return X, Y
 
 
-def build_model_from_file():
-    model_struct_file = os.path.join(PROJECT_ROOT, MODEL_PATH, MODEL_STRUCT_FILE)
-    model_weights_file = os.path.join(PROJECT_ROOT, MODEL_PATH, MODEL_WEIGHTS_FILE)
-
-    model = model_from_json(open(model_struct_file, 'r').read())
-    model.compile(loss="mse", optimizer='adam')
-    model.load_weights(model_weights_file)
+def build_model_from_file(struct_file, weights_file):
+    model = model_from_json(open(struct_file, 'r').read())
+    model.compile(loss="categorical_crossentropy", optimizer='adam')
+    model.load_weights(weights_file)
 
     return model
 
 
-def build_model():
-    """建立一个 3 层(含输入层和输出层)神经网络"""
+def build_model(input_size, seq_len, hidden_size):
+    """建立一个 seq2seq 模型"""
     model = Sequential()
-    model.add(GRU(input_dim=CHAR_NUM, output_dim=CHAR_NUM, return_sequences=True))
-    model.add(Activation('tanh'))
-    model.compile(loss="mse", optimizer='adam')
+    model.add(GRU(input_dim=input_size, output_dim=hidden_size, return_sequences=False))
+    model.add(Dense(hidden_size, activation="relu"))
+    model.add(RepeatVector(seq_len))
+    model.add(GRU(hidden_size, return_sequences=True))
+    model.add(TimeDistributed(Dense(output_dim=input_size, activation="softmax")))
+    model.compile(loss="categorical_crossentropy", optimizer='adam')
 
     return model
 
 
-def save_model_to_file(model):
+def save_model_to_file(model, struct_file, weights_file):
     # save model structure
     model_struct = model.to_json()
-    model_struct_file = os.path.join(PROJECT_ROOT, MODEL_PATH, MODEL_STRUCT_FILE)
-    open(model_struct_file, 'w').write(model_struct)
+    open(struct_file, 'w').write(model_struct)
 
     # save model weights
-    model_weights_file = os.path.join(PROJECT_ROOT, MODEL_PATH, MODEL_WEIGHTS_FILE)
-    model.save_weights(model_weights_file, overwrite=True)
+    model.save_weights(weights_file, overwrite=True)
 
 
-def train_adder(model):
-    X, Y = build_data(1000)
-    model.fit(X, Y, nb_epoch=1000)
-
-    return model
+@click.group()
+def cli():
+    pass
 
 
-@click.command()
-@click.argument('action')
-def main(action):
-    if action == 'build':
-        model = build_model()
-        model = train_adder()
-        save_model_to_file(model)
-    elif action == 'test':
-        model = build_model_from_file()
-        test_x, test_y = build_data(10)
+@cli.command()
+@click.option('--epoch', default=50, help='number of epoch to train model')
+@click.option('-m', '--model_path', default=os.path.join(PROJECT_ROOT, MODEL_PATH), help='model files to save')
+def train(epoch, model_path):
+    train_x, train_y = build_data()
 
-        preds = model.predict(test_x)
-        for i in range(len(test_x)):
-            seq_in = ''.join([INDICES_TO_CHAR[k] for k in test_x[i].argmax(axis=1)])
-            seq_out = ''.join([INDICES_TO_CHAR[k] for k in preds[i].argmax(axis=1)])
-            print seq_in, seq_out
+    model = build_model(CHAR_NUM, MAX_LEN, 128)
+    model.fit(train_x, train_y, nb_epoch=epoch)
+
+    struct_file = os.path.join(model_path, MODEL_STRUCT_FILE)
+    weights_file = os.path.join(model_path, MODEL_WEIGHTS_FILE)
+
+    save_model_to_file(model, struct_file, weights_file)
+
+
+@cli.command()
+@click.option('-m', '--model_path', default=os.path.join(PROJECT_ROOT, MODEL_PATH), help='model files to read')
+@click.argument('expression')
+def test(model_path, expression):
+    struct_file = os.path.join(model_path, MODEL_STRUCT_FILE)
+    weights_file = os.path.join(model_path, MODEL_WEIGHTS_FILE)
+
+    model = build_model_from_file(struct_file, weights_file)
+
+    x = np.zeros((1, MAX_LEN, CHAR_NUM), dtype=int)
+    expression = BEGIN_SYMBOL + expression.lower().strip() + END_SYMBOL
+    x[0] = vectorize(expression, MAX_LEN, CHAR_NUM)
+
+    pred = model.predict(x)[0]
+    print ''.join([
+        INDICES_TO_CHAR[i] for i in pred.argmax(axis=1)
+        if INDICES_TO_CHAR[i] not in (BEGIN_SYMBOL, END_SYMBOL)
+    ])
 
 
 if __name__ == '__main__':
-    main()
+    cli()
