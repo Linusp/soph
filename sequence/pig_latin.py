@@ -2,14 +2,15 @@
 
 import os
 import re
-import click
 import string
-import numpy as np
 from itertools import dropwhile
+
+import click
+import numpy as np
 from keras.layers.recurrent import GRU
 from keras.layers.wrappers import TimeDistributed
 from keras.models import Sequential, model_from_json
-from keras.layers.core import Masking, Dense, Activation, RepeatVector
+from keras.layers.core import Dense, RepeatVector
 
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -21,11 +22,12 @@ MODEL_WEIGHTS_FILE = 'piglatin_weights.h5'
 DATA_PATH = 'data'
 WORDS_FILE = 'words.txt'
 BEGIN_SYMBOL = '^'
-CHAR_SET = set(string.ascii_lowercase + BEGIN_SYMBOL)
+END_SYMBOL = '$'
+CHAR_SET = set(string.ascii_lowercase + BEGIN_SYMBOL + END_SYMBOL)
 CHAR_NUM = len(CHAR_SET)
 CHAR_TO_INDICES = {c:i for i, c in enumerate(CHAR_SET)}
 INDICES_TO_CHAR = {i:c for c, i in CHAR_TO_INDICES.iteritems()}
-MAX_LEN = 10
+MAX_LEN = 15
 
 NON_ALPHA_PAT = re.compile('[^a-z]')
 
@@ -89,7 +91,6 @@ def build_model_from_file(struct_file, weights_file):
 def build_model(input_size, seq_len, hidden_size):
     """建立一个 sequence to sequence 模型"""
     model = Sequential()
-    model.add(Masking(mask_value=0, input_shape=(seq_len, input_size)))
     model.add(GRU(input_dim=input_size, output_dim=hidden_size, return_sequences=False))
     model.add(Dense(hidden_size, activation="relu"))
     model.add(RepeatVector(seq_len))
@@ -130,7 +131,7 @@ def train(epoch, model_path):
 
 
 @cli.command()
-@click.option('--model_path', default=os.path.join(PROJECT_ROOT, MODEL_PATH), help='model files to read')
+@click.option('-m', '--model_path', default=os.path.join(PROJECT_ROOT, MODEL_PATH), help='model files to read')
 @click.argument('word')
 def test(model_path, word):
     struct_file = os.path.join(model_path, MODEL_STRUCT_FILE)
@@ -139,11 +140,14 @@ def test(model_path, word):
     model = build_model_from_file(struct_file, weights_file)
 
     x = np.zeros((1, MAX_LEN, CHAR_NUM), dtype=int)
-    word = word.lower().strip()
+    word = BEGIN_SYMBOL + word.lower().strip() + END_SYMBOL
     x[0] = vectorize(word, MAX_LEN, CHAR_NUM)
 
     pred = model.predict(x)[0]
-    print ''.join([INDICES_TO_CHAR[i] for i in pred.argmax(axis=1)])
+    print ''.join([
+        INDICES_TO_CHAR[i] for i in pred.argmax(axis=1)
+        if INDICES_TO_CHAR[i] not in (BEGIN_SYMBOL, END_SYMBOL)
+    ])
 
 
 if __name__ == '__main__':
