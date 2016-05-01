@@ -36,12 +36,12 @@
      代码可在命令行使用，进行训练和加法计算
 
      训练:
-     #+BEGIN_SRC python
+     #+BEGIN_SRC shell
      python adder.py train --epoch 50 --model_path ./
      #+END_SRC
 
      加法计算
-     #+BEGIN_SRC python
+     #+BEGIN_SRC shell
      python adder.py test --model_path ./ 1+1
      #+END_SRC
      当然，也可以使用 models 目录下有预先构建好的模型。
@@ -58,8 +58,6 @@
      101+8 -> 46
      101+9 -> 48
      #+END_EXAMPLE
-
-     
 
 ** Pig Latin
 
@@ -107,12 +105,12 @@
      代码可在命令行使用，进行训练和单词到 Pig Latin 单词的转换(效果有待提升)。
 
      训练:
-     #+BEGIN_SRC python
+     #+BEGIN_SRC shell
      python pig_latin.py train --epoch 50 --model_path ./
      #+END_SRC
 
      单词转换:
-     #+BEGIN_SRC python
+     #+BEGIN_SRC shell
      python pig_latin.py test --model_path ./ hello
      #+END_SRC
      当然，也可以使用 models 目录下有预先构建好的模型。
