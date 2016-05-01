@@ -1,0 +1,143 @@
+* Sequence Learning
+
+** Adder
+
+   + 问题描述
+
+     将加法运算视作一种 sequence to sequence 问题，那么考虑是否可以用 sequence to sequence 模型来学习到加法规则呢？
+
+   + 解决方法
+
+     1. 训练数据的构建
+
+        取所有三位数及三位以下数，生成它们之间的加法运算表达式和结果，前者作为输入序列，后者作为目标序列，并在序列前都添加开始符 BEGIN_SYMBOL、在序列后都添加结束符 END_SYMBOL，并用 END_SYMBOL 填充使序列长度为 12(使用的开源库要求训练时给定固定长度的序列，下同)，最后将每一个字符以 one-hot 形式进行向量化，最后得到大小都为 10000x12x13 的输入和输出
+
+     2. 模型的构建
+
+        模型定义如下:
+        #+BEGIN_SRC python
+        model = Sequential()
+        model.add(GRU(input_dim=input_size, output_dim=hidden_size, return_sequences=False))
+        model.add(Dense(hidden_size, activation="relu"))
+        model.add(RepeatVector(seq_len))
+        model.add(GRU(hidden_size, return_sequences=True))
+        model.add(TimeDistributed(Dense(output_dim=input_size, activation="softmax")))
+        model.compile(loss="categorical_crossentropy", optimizer='adam')
+        #+END_SRC
+
+        有几个要点:
+        - 使用更简单的 GRU 而非 LSTM
+        - 第一个 GRU 作为 encoder，因此将 =return_sequence= 参数置为 =False=
+        - 第二个 GRU 作为 decoder，将 =return_sequence== 参数置为 =True=
+        - 使用 RepeatVector 将 encoder 的输出附加到 decoder 的每一个 timestep 的输入上
+
+   + 代码使用
+
+     代码可在命令行使用，进行训练和加法计算
+
+     训练:
+     #+BEGIN_SRC python
+     python adder.py train --epoch 50 --model_path ./
+     #+END_SRC
+
+     加法计算
+     #+BEGIN_SRC python
+     python adder.py test --model_path ./ 1+1
+     #+END_SRC
+     当然，也可以使用 models 目录下有预先构建好的模型。
+
+   + 实验结果
+
+     理想情况下，是希望模型有足够的泛化能力，比如可以得到四位数加法的结果，但结果并不如人意。不过在之前 *只用一位数和二位数进行训练时* ，尝试用一个三位数加上一个一位数，得不到正确的结果，但得到了下面这样有趣的现象。
+     #+BEGIN_EXAMPLE
+     101+3 -> 41
+     101+4 -> 42
+     101+5 -> 43
+     101+6 -> 44
+     101+7 -> 45
+     101+8 -> 46
+     101+9 -> 48
+     #+END_EXAMPLE
+
+     
+
+** Pig Latin
+
+   + 问题描述
+
+     Pig Latin 的一种翻译叫做 "儿童黑话"，罗嗦一点的意译是 "故意颠倒英语字母顺序拼凑而成的黑话"，它有很多种变种规则，这里只取其原始的、最简单的两条规则:
+
+     1. 如果单词起始的字母是 *元音* ，那么在单词后面添加一个 'yay'
+
+        #+BEGIN_EXAMPLE
+        'other' -> 'otheryay'
+        #+END_EXAMPLE
+
+     2. 如果单词起始的字母是 *辅音* ，那么将起始到第一个元音之前所有的辅音字母从单词首部挪到尾部，然后添加一个 'ay'
+
+        #+BEGIN_EXAMPLE
+        'book' -> 'ookbay'
+        #+END_EXAMPLE
+
+        这里希望能训练一个 Sequence to Sequence 的模型，来解决这个问题(当然更大程度上是为了了解 Sequence to Sequence 模型的构建和训练过程 XD)
+
+   + 解决方法
+
+     1. 训练数据的构建
+
+        用收集的 2043 个长度在 3-6 的常用英文单词作为原始数据，去除其中包含非 a-z 的字母的单词，最后得到了 2013 个有效单词。然后根据的规则将这些单词改写为 Pig Latin 形式的单词，作为对应的输出。
+
+        首先在单词前都添加开始符 BEGIN_SYMBOL、在单词后都添加结束符 END_SYMBOL，并用 END_SYMBOL 填充 *使其长度为 15* ，并将每一个字符用 one-hot 形式进行向量化(向量化时用于填充的空白符用全 0 向量表示)，最后得到大小都为 2013x10x28 的输入和输出。
+
+     2. 模型的构建
+
+        模型定义如下:
+        #+BEGIN_SRC python
+        model = Sequential()
+        model.add(GRU(input_dim=input_size, output_dim=hidden_size, return_sequences=False))
+        model.add(Dense(hidden_size, activation="relu"))
+        model.add(RepeatVector(seq_len))
+        model.add(GRU(hidden_size, return_sequences=True))
+        model.add(TimeDistributed(Dense(output_dim=input_size, activation="linear")))
+        model.compile(loss="mse", optimizer='adam')
+        #+END_SRC
+
+   + 代码使用
+
+     代码可在命令行使用，进行训练和单词到 Pig Latin 单词的转换(效果有待提升)。
+
+     训练:
+     #+BEGIN_SRC python
+     python pig_latin.py train --epoch 50 --model_path ./
+     #+END_SRC
+
+     单词转换:
+     #+BEGIN_SRC python
+     python pig_latin.py test --model_path ./ hello
+     #+END_SRC
+     当然，也可以使用 models 目录下有预先构建好的模型。
+
+   + 实验结果
+
+     可以认为网络最后 *大致学习到了 Pig Latin 的构造规则* ，在一些训练集之外的数据上，能看到网络给出了正确的结果:
+
+     #+BEGIN_EXAMPLE
+     ok -> okyay
+     sin -> insay
+     cos -> oscay
+     master -> astermay
+     hanting -> antinghay
+     #+END_EXAMPLE
+
+     仔细观察的话会发现其实上述结果正确的词，有两种情况:
+     1. 起始字符是元音字母，对应的变换操作在训练样本中都存在(a, e, i, o, u 都被覆盖)
+     2. 起始字符是辅音字母，且起始部分的 *连续辅音字母串* 在训练样本中存在
+
+     所以很容易构造一个无法被正确处理的字符序列出来，那就是起始字符是辅音，而且首部的连续辅音字母串在训练样本中不存在:
+     #+BEGIN_EXAMPLE
+     dddodd -> oddddray
+     mxnet -> inetlay
+     zzzm -> omhmay
+     #+END_EXAMPLE
+
+     但是无论结果错误程度如何，能看到结果总是以 'ay' 结尾的！
