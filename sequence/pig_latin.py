@@ -27,7 +27,8 @@ CHAR_SET = set(string.ascii_lowercase + BEGIN_SYMBOL + END_SYMBOL)
 CHAR_NUM = len(CHAR_SET)
 CHAR_TO_INDICES = {c:i for i, c in enumerate(CHAR_SET)}
 INDICES_TO_CHAR = {i:c for c, i in CHAR_TO_INDICES.iteritems()}
-MAX_LEN = 15
+MAX_INPUT_LEN = 18
+MAX_OUTPUT_LEN = 20
 
 NON_ALPHA_PAT = re.compile('[^a-z]')
 
@@ -74,11 +75,11 @@ def build_data():
         plain_y.append(BEGIN_SYMBOL + pig_latin(w))
 
     # train_x 和 train_y 必须是 3-D 的数据
-    train_x = np.zeros((len(words), MAX_LEN, CHAR_NUM), dtype=int)
-    train_y = np.zeros((len(words), MAX_LEN, CHAR_NUM), dtype=int)
+    train_x = np.zeros((len(words), MAX_INPUT_LEN, CHAR_NUM), dtype=int)
+    train_y = np.zeros((len(words), MAX_OUTPUT_LEN, CHAR_NUM), dtype=int)
     for i in range(len(words)):
-        train_x[i] = vectorize(plain_x[i], MAX_LEN, CHAR_NUM)
-        train_y[i] = vectorize(plain_y[i], MAX_LEN, CHAR_NUM)
+        train_x[i] = vectorize(plain_x[i], MAX_INPUT_LEN, CHAR_NUM)
+        train_y[i] = vectorize(plain_y[i], MAX_OUTPUT_LEN, CHAR_NUM)
 
     return train_x, train_y
 
@@ -122,10 +123,16 @@ def cli():
 @click.option('--epoch', default=100, help='number of epoch to train model')
 @click.option('-m', '--model_path', default=os.path.join(PROJECT_ROOT, MODEL_PATH), help='model files to save')
 def train(epoch, model_path):
-    train_x, train_y = build_data()
-    model = build_model(CHAR_NUM, MAX_LEN, 128)
+    x, y = build_data()
+    indices = len(x) / 10
+    test_x = x[:indices]
+    test_y = y[:indices]
+    train_x = x[indices:]
+    train_y = y[indices:]
 
-    model.fit(train_x, train_y, nb_epoch=epoch)
+    model = build_model(CHAR_NUM, MAX_OUTPUT_LEN, 128)
+
+    model.fit(train_x, train_y, validation_data=(test_x, test_y), batch_size=128, nb_epoch=epoch)
 
     struct_file = os.path.join(model_path, MODEL_STRUCT_FILE)
     weights_file = os.path.join(model_path, MODEL_WEIGHTS_FILE)
@@ -142,9 +149,9 @@ def test(model_path, word):
 
     model = build_model_from_file(struct_file, weights_file)
 
-    x = np.zeros((1, MAX_LEN, CHAR_NUM), dtype=int)
+    x = np.zeros((1, MAX_INPUT_LEN, CHAR_NUM), dtype=int)
     word = BEGIN_SYMBOL + word.lower().strip() + END_SYMBOL
-    x[0] = vectorize(word, MAX_LEN, CHAR_NUM)
+    x[0] = vectorize(word, MAX_INPUT_LEN, CHAR_NUM)
 
     pred = model.predict(x)[0]
     print ''.join([
