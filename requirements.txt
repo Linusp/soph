@@ -13,6 +13,7 @@ Cython==0.24              # via h5py
 Flask==0.10.1
 h5py==2.5.0
 itsdangerous==0.24        # via flask
+jieba==0.38
 Jinja2==2.8               # via flask
 keras==1.0
 MarkupSafe==0.23          # via jinja2
