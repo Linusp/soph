@@ -4,4 +4,5 @@ h5py==2.5.0
 click==6.6
 Flask==0.10.1
 jieba==0.38
+scikit-learn==0.17.1
 -e git+https://github.com/Linusp/materials.git@6e05ab7edfb5#egg=materials
