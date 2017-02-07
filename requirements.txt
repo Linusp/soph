@@ -5,7 +5,6 @@
 #    pip-compile --output-file requirements.txt requirements.in
 #
 
--e git+https://github.com/Linusp/materials.git@6e05ab7edfb5#egg=materials
 click==6.6
 Cython==0.24              # via h5py
 h5py==2.5.0
