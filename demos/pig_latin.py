@@ -1,4 +1,5 @@
 # coding: utf-8
+from __future__ import print_function
 
 import os
 import re
@@ -154,10 +155,10 @@ def test(model_path, word):
     x[0] = vectorize(word, MAX_INPUT_LEN, CHAR_NUM)
 
     pred = model.predict(x)[0]
-    print ''.join([
+    print(''.join([
         INDICES_TO_CHAR[i] for i in pred.argmax(axis=1)
         if INDICES_TO_CHAR[i] not in (BEGIN_SYMBOL, END_SYMBOL)
-    ])
+    ]))
 
 
 if __name__ == '__main__':

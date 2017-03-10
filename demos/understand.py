@@ -1,4 +1,5 @@
 # coding: utf-8
+from __future__ import print_function
 
 import numpy as np
 from keras.models import Sequential
@@ -25,12 +26,12 @@ def understand_return_sequence():
     rez_1 = model_1.predict_proba(inz, verbose=0)
     rez_2 = model_2.predict_proba(inz, verbose=0)
 
-    print
-    print '=========== understand return_sequence ================='
-    print 'Input shape is: {}'.format(inz.shape)
-    print 'Output shape of model with `return_sequences=True`: {}'.format(rez_1.shape)
-    print 'Output shape of model with `return_sequences=False`: {}'.format(rez_2.shape)
-    print '====================== end ============================='
+    print()
+    print('=========== understand return_sequence =================')
+    print('Input shape is: {}'.format(inz.shape))
+    print('Output shape of model with `return_sequences=True`: {}'.format(rez_1.shape))
+    print('Output shape of model with `return_sequences=False`: {}'.format(rez_2.shape))
+    print('====================== end =============================')
 
 
 def understand_variable_length_handle():

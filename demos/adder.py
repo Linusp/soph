@@ -1,4 +1,5 @@
 # coding: utf-8
+from __future__ import print_function
 
 import os
 import click
@@ -128,10 +129,10 @@ def test(model_path, expression):
     x[0] = vectorize(expression, MAX_LEN, CHAR_NUM)
 
     pred = model.predict(x)[0]
-    print ''.join([
+    print(''.join([
         INDICES_TO_CHAR[i] for i in pred.argmax(axis=1)
         if INDICES_TO_CHAR[i] not in (BEGIN_SYMBOL, END_SYMBOL)
-    ])
+    ]))
 
 
 if __name__ == '__main__':

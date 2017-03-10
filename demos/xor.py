@@ -1,4 +1,5 @@
 # coding: utf-8
+from __future__ import print_function
 
 import os
 import json
@@ -83,7 +84,7 @@ def main(action):
                 break
 
             x = np.array([[int(e) for e in user_input[:2]]])
-            print model.predict(x)
+            print(model.predict(x))
     else:
         click.echo("invalid action.")
 

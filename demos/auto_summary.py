@@ -1,6 +1,5 @@
 # coding: utf-8
-
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import sys
 import cPickle
@@ -40,11 +39,11 @@ def simple_auto_summary(text, stopwords=None, number=5):
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        print 'Usage: {} <text> <stopfile>'.format(sys.argv[0])
+        print('Usage: {} <text> <stopfile>'.format(sys.argv[0]))
         sys.exit(1)
 
     text = open(sys.argv[1]).read().strip()
     stop = cPickle.load(open(sys.argv[2], 'r'))
 
     for sent in simple_auto_summary(text, stop, 5):
-        print ''.join(sent)
+        print(''.join(sent))
