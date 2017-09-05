@@ -27,7 +27,7 @@ END_SYMBOL = '$'
 CHAR_SET = set(string.ascii_lowercase + BEGIN_SYMBOL + END_SYMBOL)
 CHAR_NUM = len(CHAR_SET)
 CHAR_TO_INDICES = {c:i for i, c in enumerate(CHAR_SET)}
-INDICES_TO_CHAR = {i:c for c, i in CHAR_TO_INDICES.iteritems()}
+INDICES_TO_CHAR = {i:c for c, i in CHAR_TO_INDICES.items()}
 MAX_INPUT_LEN = 18
 MAX_OUTPUT_LEN = 20
 
