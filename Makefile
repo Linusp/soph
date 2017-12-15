@@ -1,16 +1,13 @@
-VENV = venv
-PYTHON = $(VENV)/bin/python
-PIP = $(VENV)/bin/pip
-PIP_INSTALL = $(PIP) install --exists-action=w
-
 setup: venv deps
 
 deps: venv
-	@$(PIP_INSTALL) -r requirements.txt
+	- venv/bin/pip install -r requirements.txt
 
 venv:
-	@pyvenv $(VENV)
-	@$(PIP_INSTALL) -U pip setuptools pylint
+	- virtualenv --python=$(shell which python3.6) --prompt '<venv:soph>' venv
+	- venv/bin/pip -U pip setuptools pylint
 
-clean_pyc:
-	find . -not \( -path './venv' -prune \) -name '*.pyc' -exec rm -f {} \;
+clean:
+	- find . -iname "*__pycache__" | xargs rm -rf
+	- find . -iname "*.pyc" | xargs rm -rf
+
