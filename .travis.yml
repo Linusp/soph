@@ -9,4 +9,4 @@ before_install:
 install: "make venv && make deps"
 
 script:
-    - "bash tests/pylint.sh"
+    - "make lint"
