@@ -4,18 +4,23 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
+--index-url https://pypi.doubanio.com/simple
+--trusted-host pypi.doubanio.com
 
-click==6.6
-Cython==0.24              # via h5py
-h5py==2.5.0
-jieba==0.38
-keras==1.0
-numpy==1.11.0
-pandas==0.18.0
-python-dateutil==2.5.2    # via pandas
-pytz==2016.3              # via pandas
+bleach==1.5.0             # via tensorflow-tensorboard
+click==6.7
+enum34==1.1.6             # via tensorflow
+html5lib==0.9999999       # via bleach, tensorflow-tensorboard
+jieba==0.39
+keras==2.1.2
+markdown==2.6.9           # via tensorflow-tensorboard
+numpy==1.13.3             # via keras, tensorflow, tensorflow-tensorboard
+protobuf==3.5.0.post1     # via tensorflow, tensorflow-tensorboard
 pyyaml==3.11              # via keras
-scikit-learn==0.17.1
-scipy==0.17.0             # via theano
-six==1.10.0               # via h5py, keras, python-dateutil, theano
-Theano==0.8.1             # via keras
+scikit-learn==0.19.1
+scipy==0.17.0             # via keras
+six==1.10.0               # via bleach, html5lib, keras, protobuf, tensorflow, tensorflow-tensorboard
+tensorflow-tensorboard==0.4.0rc3  # via tensorflow
+tensorflow==1.4.0
+werkzeug==0.12.2          # via tensorflow-tensorboard
+wheel==0.30.0             # via tensorflow, tensorflow-tensorboard

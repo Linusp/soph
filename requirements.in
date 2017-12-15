@@ -1,6 +1,7 @@
-keras==1.0
-numpy==1.11.0
-h5py==2.5.0
-click==6.6
-jieba==0.38
-scikit-learn==0.17.1
+--index-url https://pypi.doubanio.com/simple
+
+keras==2.1.2
+click==6.7
+jieba==0.39
+scikit-learn==0.19.1
+tensorflow==1.4.0
