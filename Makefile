@@ -2,7 +2,7 @@ setup: venv deps
 
 lint: venv clean
 	- bash tests/ensure_flake8.sh
-	- venv/bin/flake8 demos/ --format=pylint || true
+	- venv/bin/flake8 demos/ --format=pylint
 
 deps: venv
 	- venv/bin/pip install -r requirements.txt
