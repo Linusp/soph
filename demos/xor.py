@@ -3,29 +3,23 @@ from __future__ import print_function
 
 import os
 import click
+import pickle
 import numpy as np
-from keras.models import Sequential, model_from_json
+from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import SGD
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = 'models'
-MODEL_STRUCT_FILE = 'xor_struct.json'
-MODEL_WEIGHTS_FILE = 'xor_weights.h5'
 
 TRAIN_X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
 TRAIN_Y = np.array([[0], [1], [1], [0]])
 
 
-def build_model_from_file():
-    model_struct_file = os.path.join(PROJECT_ROOT, MODEL_PATH, MODEL_STRUCT_FILE)
-    model_weights_file = os.path.join(PROJECT_ROOT, MODEL_PATH, MODEL_WEIGHTS_FILE)
-
-    sgd = SGD(lr=0.1)
-
-    model = model_from_json(open(model_struct_file, 'r').read())
-    model.compile(loss="binary_crossentropy", optimizer=sgd)
-    model.load_weights(model_weights_file)
+def build_model_from_file(model_file):
+    structure, weights = pickle.load(open(model_file, 'rb'))
+    model = Sequential.from_config(structure)
+    model.set_weights(weights)
 
     return model
 
@@ -43,15 +37,11 @@ def build_model():
     return model
 
 
-def save_model_to_file(model):
+def save_model_to_file(model, model_file):
     # save model structure
-    model_struct = model.to_json()
-    model_struct_file = os.path.join(PROJECT_ROOT, MODEL_PATH, MODEL_STRUCT_FILE)
-    open(model_struct_file, 'w').write(model_struct)
-
-    # save model weights
-    model_weights_file = os.path.join(PROJECT_ROOT, MODEL_PATH, MODEL_WEIGHTS_FILE)
-    model.save_weights(model_weights_file, overwrite=True)
+    structure = model.get_config()
+    weights = model.get_weights()
+    pickle.dump((structure, weights), open(model_file, 'wb'))
 
 
 def train_xor(model):
@@ -69,10 +59,10 @@ def main(action):
         click.echo("train with xor data...")
         train_xor(model)
         click.echo("saving to hard disk...")
-        save_model_to_file(model)
+        save_model_to_file(model, os.path.join(PROJECT_ROOT, MODEL_PATH, 'xor.model'))
         click.echo("finished!")
     elif action == 'test':
-        model = build_model_from_file()
+        model = build_model_from_file(os.path.join(PROJECT_ROOT, MODEL_PATH, 'xor.model'))
         while True:
             user_input = input("Enter two number, 0 or 1, anything else to quit: ")
             user_input = [e.strip() for e in user_input.split()]

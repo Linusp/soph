@@ -4,6 +4,7 @@ from __future__ import print_function
 import os
 import re
 import string
+import pickle
 from itertools import dropwhile
 from os.path import dirname, abspath, join
 
@@ -11,15 +12,12 @@ import click
 import numpy as np
 from keras.layers.recurrent import GRU
 from keras.layers.wrappers import TimeDistributed
-from keras.models import Sequential, model_from_json
+from keras.models import Sequential
 from keras.layers.core import Dense, RepeatVector
 
 
 PROJECT_ROOT = dirname(dirname(abspath(__file__)))
 MODEL_PATH = 'models'
-
-MODEL_STRUCT_FILE = 'piglatin_struct.json'
-MODEL_WEIGHTS_FILE = 'piglatin_weights.h5'
 
 DATA_PATH = 'data'
 WORDS_FILE = 'words.txt'
@@ -86,10 +84,10 @@ def build_data():
     return train_x, train_y
 
 
-def build_model_from_file(struct_file, weights_file):
-    model = model_from_json(open(struct_file, 'r').read())
-    model.compile(loss="mse", optimizer='adam')
-    model.load_weights(weights_file)
+def build_model_from_file(model_file):
+    structure, weights = pickle.load(open(model_file, 'rb'))
+    model = Sequential.from_config(structure)
+    model.set_weights(weights)
 
     return model
 
@@ -107,13 +105,11 @@ def build_model(input_size, seq_len, hidden_size):
     return model
 
 
-def save_model_to_file(model, struct_file, weights_file):
+def save_model_to_file(model, model_file):
     # save model structure
-    model_struct = model.to_json()
-    open(struct_file, 'w').write(model_struct)
-
-    # save model weights
-    model.save_weights(weights_file, overwrite=True)
+    structure = model.get_config()
+    weights = model.get_weights()
+    pickle.dump((structure, weights), open(model_file, 'wb'))
 
 
 @click.group()
@@ -137,10 +133,8 @@ def train(epoch, model_path):
 
     model.fit(train_x, train_y, validation_data=(test_x, test_y), batch_size=128, nb_epoch=epoch)
 
-    struct_file = os.path.join(model_path, MODEL_STRUCT_FILE)
-    weights_file = os.path.join(model_path, MODEL_WEIGHTS_FILE)
-
-    save_model_to_file(model, struct_file, weights_file)
+    model_file = os.path.join(model_path, 'pig_latin.model')
+    save_model_to_file(model, model_file)
 
 
 @cli.command()
@@ -148,10 +142,8 @@ def train(epoch, model_path):
               help='model files to read')
 @click.argument('word')
 def test(model_path, word):
-    struct_file = os.path.join(model_path, MODEL_STRUCT_FILE)
-    weights_file = os.path.join(model_path, MODEL_WEIGHTS_FILE)
-
-    model = build_model_from_file(struct_file, weights_file)
+    model_file = os.path.join(model_path, 'pig_latin.model')
+    model = build_model_from_file(model_file)
 
     x = np.zeros((1, MAX_INPUT_LEN, CHAR_NUM), dtype=int)
     word = BEGIN_SYMBOL + word.lower().strip() + END_SYMBOL

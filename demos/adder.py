@@ -3,18 +3,16 @@ from __future__ import print_function
 
 import os
 import click
+import pickle
 import numpy as np
 from keras.layers.recurrent import GRU
 from keras.layers.wrappers import TimeDistributed
 from keras.layers.core import Dense, RepeatVector
-from keras.models import Sequential, model_from_json
+from keras.models import Sequential
 
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = 'models'
-MODEL_STRUCT_FILE = 'adder_struct.json'
-MODEL_WEIGHTS_FILE = 'adder_weights.h5'
-
 
 BEGIN_SYMBOL = '^'
 END_SYMBOL = '$'
@@ -65,10 +63,10 @@ def build_data():
     return X, Y
 
 
-def build_model_from_file(struct_file, weights_file):
-    model = model_from_json(open(struct_file, 'r').read())
-    model.compile(loss="categorical_crossentropy", optimizer='adam')
-    model.load_weights(weights_file)
+def build_model_from_file(model_file):
+    structure, weights = pickle.load(open(model_file, 'rb'))
+    model = Sequential.from_config(structure)
+    model.set_weights(weights)
 
     return model
 
@@ -86,13 +84,11 @@ def build_model(input_size, seq_len, hidden_size):
     return model
 
 
-def save_model_to_file(model, struct_file, weights_file):
+def save_model_to_file(model, model_file):
     # save model structure
-    model_struct = model.to_json()
-    open(struct_file, 'w').write(model_struct)
-
-    # save model weights
-    model.save_weights(weights_file, overwrite=True)
+    structure = model.get_config()
+    weights = model.get_weights()
+    pickle.dump((structure, weights), open(model_file, 'wb'))
 
 
 @click.group()
@@ -110,10 +106,8 @@ def train(epoch, model_path):
     model = build_model(CHAR_NUM, MAX_LEN, 128)
     model.fit(train_x, train_y, nb_epoch=epoch)
 
-    struct_file = os.path.join(model_path, MODEL_STRUCT_FILE)
-    weights_file = os.path.join(model_path, MODEL_WEIGHTS_FILE)
-
-    save_model_to_file(model, struct_file, weights_file)
+    model_file = os.path.join(model_path, "adder.model")
+    save_model_to_file(model, model_file)
 
 
 @cli.command()
@@ -121,10 +115,8 @@ def train(epoch, model_path):
               help='model files to read')
 @click.argument('expression')
 def test(model_path, expression):
-    struct_file = os.path.join(model_path, MODEL_STRUCT_FILE)
-    weights_file = os.path.join(model_path, MODEL_WEIGHTS_FILE)
-
-    model = build_model_from_file(struct_file, weights_file)
+    model_file = os.path.join(model_path, 'adder.model')
+    model = build_model_from_file(model_file)
 
     x = np.zeros((1, MAX_LEN, CHAR_NUM), dtype=int)
     expression = BEGIN_SYMBOL + expression.lower().strip() + END_SYMBOL
