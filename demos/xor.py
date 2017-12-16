@@ -2,11 +2,10 @@
 from __future__ import print_function
 
 import os
-import json
 import click
 import numpy as np
 from keras.models import Sequential, model_from_json
-from keras.layers import Dense, Activation
+from keras.layers import Dense
 from keras.optimizers import SGD
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -75,7 +74,7 @@ def main(action):
     elif action == 'test':
         model = build_model_from_file()
         while True:
-            user_input = raw_input("Enter two number, 0 or 1, anything else to quit: ")
+            user_input = input("Enter two number, 0 or 1, anything else to quit: ")
             user_input = [e.strip() for e in user_input.split()]
             if not all(e.isdigit() and int(e) in (0, 1) for e in user_input):
                 break

@@ -49,12 +49,12 @@ def understand_variable_length_handle():
     inz_2 = np.random.randn(1, 87, 256)
     rez_2 = model.predict_proba(inz_2, verbose=0)
 
-    print
-    print '=========== understand variable length ================='
-    print 'With `return_sequence=True`'
-    print 'Input shape is: {}, output shae is {}'.format(inz_1.shape, rez_1.shape)
-    print 'Input shape is: {}, output shae is {}'.format(inz_2.shape, rez_2.shape)
-    print '====================== end ============================='
+    print()
+    print('=========== understand variable length =================')
+    print('With `return_sequence=True`')
+    print('Input shape is: {}, output shae is {}'.format(inz_1.shape, rez_1.shape))
+    print('Input shape is: {}, output shae is {}'.format(inz_2.shape, rez_2.shape))
+    print('====================== end =============================')
 
 
 def try_variable_length_train():
@@ -70,7 +70,7 @@ def try_variable_length_train():
     train_x = []
     train_y = []
     for i in range(100):
-        seq_length = np.random.randint(78, 87+1)
+        seq_length = np.random.randint(78, 87 + 1)
         sequence = []
         for _ in range(seq_length):
             sequence.append([np.random.randn() for _ in range(256)])

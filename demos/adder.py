@@ -24,7 +24,7 @@ MAX_LEN = 12
 MAX_LEN = 12
 
 CHAR_TO_INDICES = {c: i for i, c in enumerate(CHARSET)}
-INDICES_TO_CHAR = {i: c for c, i in CHAR_TO_INDICES.iteritems()}
+INDICES_TO_CHAR = {i: c for c, i in CHAR_TO_INDICES.items()}
 
 
 def vectorize(seq, seq_len, vec_size):
@@ -45,7 +45,7 @@ def build_data():
     for i in range(0, 100):
         for j in range(0, 100):
             x = BEGIN_SYMBOL + '{}+{}'.format(i, j) + END_SYMBOL
-            y = BEGIN_SYMBOL + '{}'.format(i+j) + END_SYMBOL
+            y = BEGIN_SYMBOL + '{}'.format(i + j) + END_SYMBOL
 
             plain_x.append(x)
             plain_y.append(y)
@@ -102,7 +102,8 @@ def cli():
 
 @cli.command()
 @click.option('--epoch', default=50, help='number of epoch to train model')
-@click.option('-m', '--model_path', default=os.path.join(PROJECT_ROOT, MODEL_PATH), help='model files to save')
+@click.option('-m', '--model_path', default=os.path.join(PROJECT_ROOT, MODEL_PATH),
+              help='model files to save')
 def train(epoch, model_path):
     train_x, train_y = build_data()
 
@@ -116,7 +117,8 @@ def train(epoch, model_path):
 
 
 @cli.command()
-@click.option('-m', '--model_path', default=os.path.join(PROJECT_ROOT, MODEL_PATH), help='model files to read')
+@click.option('-m', '--model_path', default=os.path.join(PROJECT_ROOT, MODEL_PATH),
+              help='model files to read')
 @click.argument('expression')
 def test(model_path, expression):
     struct_file = os.path.join(model_path, MODEL_STRUCT_FILE)

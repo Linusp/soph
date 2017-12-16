@@ -5,6 +5,7 @@ import os
 import re
 import string
 from itertools import dropwhile
+from os.path import dirname, abspath, join
 
 import click
 import numpy as np
@@ -14,7 +15,7 @@ from keras.models import Sequential, model_from_json
 from keras.layers.core import Dense, RepeatVector
 
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_ROOT = dirname(dirname(abspath(__file__)))
 MODEL_PATH = 'models'
 
 MODEL_STRUCT_FILE = 'piglatin_struct.json'
@@ -26,8 +27,8 @@ BEGIN_SYMBOL = '^'
 END_SYMBOL = '$'
 CHAR_SET = set(string.ascii_lowercase + BEGIN_SYMBOL + END_SYMBOL)
 CHAR_NUM = len(CHAR_SET)
-CHAR_TO_INDICES = {c:i for i, c in enumerate(CHAR_SET)}
-INDICES_TO_CHAR = {i:c for c, i in CHAR_TO_INDICES.iteritems()}
+CHAR_TO_INDICES = {c: i for i, c in enumerate(CHAR_SET)}
+INDICES_TO_CHAR = {i: c for c, i in CHAR_TO_INDICES.items()}
 MAX_INPUT_LEN = 18
 MAX_OUTPUT_LEN = 20
 
@@ -47,7 +48,7 @@ def pig_latin(word):
         return word + 'yay'
     else:
         remain = ''.join(dropwhile(is_consonant, word))
-        removed = word[:len(word)-len(remain)]
+        removed = word[:len(word) - len(remain)]
         return remain + removed + 'ay'
 
 
@@ -122,10 +123,11 @@ def cli():
 
 @cli.command()
 @click.option('--epoch', default=100, help='number of epoch to train model')
-@click.option('-m', '--model_path', default=os.path.join(PROJECT_ROOT, MODEL_PATH), help='model files to save')
+@click.option('-m', '--model_path', default=join(PROJECT_ROOT, MODEL_PATH),
+              help='model files to save')
 def train(epoch, model_path):
     x, y = build_data()
-    indices = len(x) / 10
+    indices = int(len(x) / 10)
     test_x = x[:indices]
     test_y = y[:indices]
     train_x = x[indices:]
@@ -142,7 +144,8 @@ def train(epoch, model_path):
 
 
 @cli.command()
-@click.option('-m', '--model_path', default=os.path.join(PROJECT_ROOT, MODEL_PATH), help='model files to read')
+@click.option('-m', '--model_path', default=join(PROJECT_ROOT, MODEL_PATH),
+              help='model files to read')
 @click.argument('word')
 def test(model_path, word):
     struct_file = os.path.join(model_path, MODEL_STRUCT_FILE)

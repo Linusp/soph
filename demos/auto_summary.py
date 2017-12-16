@@ -6,8 +6,6 @@ import cPickle
 from itertools import chain
 from collections import Counter
 
-import numpy as np
-
 from nlp.utils import (
     clean,
     sents_tokenize,
