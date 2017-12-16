@@ -2,10 +2,12 @@
 from __future__ import unicode_literals
 
 import re
+import pickle
 import jieba
 import logging
 from functools import partial, reduce
 
+from keras.models import Sequential
 
 jieba.setLogLevel(logging.INFO)
 
@@ -101,3 +103,18 @@ def shingle(sequence, length):
         return []
     else:
         return [sequence[i:i + length] for i in range(len(sequence) - length + 1)]
+
+
+def build_model_from_file(model_file):
+    structure, weights = pickle.load(open(model_file, 'rb'))
+    model = Sequential.from_config(structure)
+    model.set_weights(weights)
+
+    return model
+
+
+def save_model_to_file(model, model_file):
+    # save model structure
+    structure = model.get_config()
+    weights = model.get_weights()
+    pickle.dump((structure, weights), open(model_file, 'wb'))
