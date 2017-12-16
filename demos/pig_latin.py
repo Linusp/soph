@@ -6,7 +6,6 @@ import re
 import string
 import pickle
 from itertools import dropwhile
-from os.path import dirname, abspath, join
 
 import click
 import numpy as np
@@ -15,11 +14,8 @@ from keras.layers.wrappers import TimeDistributed
 from keras.models import Sequential
 from keras.layers.core import Dense, RepeatVector
 
+from .consts import PROJECT_ROOT, MODEL_PATH, DATA_PATH
 
-PROJECT_ROOT = dirname(dirname(abspath(__file__)))
-MODEL_PATH = 'models'
-
-DATA_PATH = 'data'
 WORDS_FILE = 'words.txt'
 BEGIN_SYMBOL = '^'
 END_SYMBOL = '$'
@@ -62,7 +58,7 @@ def vectorize(word, seq_len, vec_size):
 
 
 def build_data():
-    words_file = os.path.join(PROJECT_ROOT, DATA_PATH, WORDS_FILE)
+    words_file = os.path.join(DATA_PATH, WORDS_FILE)
     words = [
         w.lower().strip() for w in open(words_file, 'r').readlines()
         if w.strip() != '' and not NON_ALPHA_PAT.findall(w.lower().strip())
@@ -119,7 +115,7 @@ def cli():
 
 @cli.command()
 @click.option('--epoch', default=100, help='number of epoch to train model')
-@click.option('-m', '--model_path', default=join(PROJECT_ROOT, MODEL_PATH),
+@click.option('-m', '--model_path', default=os.path.join(PROJECT_ROOT, MODEL_PATH),
               help='model files to save')
 def train(epoch, model_path):
     x, y = build_data()
@@ -138,7 +134,7 @@ def train(epoch, model_path):
 
 
 @cli.command()
-@click.option('-m', '--model_path', default=join(PROJECT_ROOT, MODEL_PATH),
+@click.option('-m', '--model_path', default=os.path.join(PROJECT_ROOT, MODEL_PATH),
               help='model files to read')
 @click.argument('word')
 def test(model_path, word):

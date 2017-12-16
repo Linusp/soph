@@ -10,9 +10,7 @@ from keras.layers.wrappers import TimeDistributed
 from keras.layers.core import Dense, RepeatVector
 from keras.models import Sequential
 
-
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL_PATH = 'models'
+from .consts import PROJECT_ROOT, MODEL_PATH
 
 BEGIN_SYMBOL = '^'
 END_SYMBOL = '$'

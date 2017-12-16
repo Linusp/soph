@@ -9,8 +9,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import SGD
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL_PATH = 'models'
+from .consts import PROJECT_ROOT, MODEL_PATH
 
 TRAIN_X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
 TRAIN_Y = np.array([[0], [1], [1], [0]])
