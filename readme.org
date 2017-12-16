@@ -10,3 +10,9 @@
    #+BEGIN_SRC sh
    make venv && make deps && source venv/bin/active
    #+END_SRC
+
+** 使用
+
+   #+BEGIN_SRC sh
+   python main.py
+   #+END_SRC
