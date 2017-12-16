@@ -4,17 +4,16 @@ from __future__ import print_function
 import os
 import re
 import string
-import pickle
 from itertools import dropwhile
 
-import click
 import numpy as np
 from keras.layers.recurrent import GRU
 from keras.layers.wrappers import TimeDistributed
 from keras.models import Sequential
 from keras.layers.core import Dense, RepeatVector
 
-from .consts import PROJECT_ROOT, MODEL_PATH, DATA_PATH
+from ..consts import DATA_PATH
+from ..utils import build_model_from_file, save_model_to_file
 
 WORDS_FILE = 'words.txt'
 BEGIN_SYMBOL = '^'
@@ -80,14 +79,6 @@ def build_data():
     return train_x, train_y
 
 
-def build_model_from_file(model_file):
-    structure, weights = pickle.load(open(model_file, 'rb'))
-    model = Sequential.from_config(structure)
-    model.set_weights(weights)
-
-    return model
-
-
 def build_model(input_size, seq_len, hidden_size):
     """建立一个 sequence to sequence 模型"""
     model = Sequential()
@@ -101,22 +92,6 @@ def build_model(input_size, seq_len, hidden_size):
     return model
 
 
-def save_model_to_file(model, model_file):
-    # save model structure
-    structure = model.get_config()
-    weights = model.get_weights()
-    pickle.dump((structure, weights), open(model_file, 'wb'))
-
-
-@click.group()
-def cli():
-    pass
-
-
-@cli.command()
-@click.option('--epoch', default=100, help='number of epoch to train model')
-@click.option('-m', '--model_path', default=os.path.join(PROJECT_ROOT, MODEL_PATH),
-              help='model files to save')
 def train(epoch, model_path):
     x, y = build_data()
     indices = int(len(x) / 10)
@@ -133,10 +108,6 @@ def train(epoch, model_path):
     save_model_to_file(model, model_file)
 
 
-@cli.command()
-@click.option('-m', '--model_path', default=os.path.join(PROJECT_ROOT, MODEL_PATH),
-              help='model files to read')
-@click.argument('word')
 def test(model_path, word):
     model_file = os.path.join(model_path, 'pig_latin.model')
     model = build_model_from_file(model_file)
@@ -150,7 +121,3 @@ def test(model_path, word):
         INDICES_TO_CHAR[i] for i in pred.argmax(axis=1)
         if INDICES_TO_CHAR[i] not in (BEGIN_SYMBOL, END_SYMBOL)
     ]))
-
-
-if __name__ == '__main__':
-    cli()
